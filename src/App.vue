@@ -25,4 +25,8 @@ export default {
 #app .theme-picker {
   display: none;
 }
+#app{
+  max-width: 400px;
+  margin: 0 auto;
+}
 </style>
