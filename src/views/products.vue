@@ -242,7 +242,7 @@ export default {
 			background-image: url(../assets/images/frame15.png);
 			background-size: 100%, 100%;
 			width: 155px;
-			min-height: 245px;
+			min-height: 250px;
 			object-fit: cover;
 			margin-bottom: 20px;
 			position: relative;
@@ -269,9 +269,6 @@ export default {
 					font-size: 16px;
 					font-weight: bold;
 					color: #000;
-					//height: 30px;
-					//line-height: 30px;
-					// margin: 10px 0;
 				}
 
 				.card_desc {
@@ -291,7 +288,7 @@ export default {
 				.card_sub {
 					font-size: 12px;
 					color: #1A1A1A;
-					line-height: 30px;
+					height: 30px;
 				}
 
 				.unlimited {

@@ -360,7 +360,7 @@ export default {
         background-image: url(../assets/images/frame15.png);
         background-size: 100%, 100%;
         width: 155px;
-        height: 245px;
+        height: 250px;
         object-fit: cover;
         margin-bottom: 20px;
         position: relative;
@@ -410,7 +410,7 @@ export default {
           .card_sub {
             font-size: 12px;
             color: #1A1A1A;
-            line-height: 30px;
+            height: 30px;
           }
 
           .unlimited {

@@ -7,33 +7,30 @@
         <div class="titleBox">
           <div class="title">最適なプランを探す</div>
         </div>
-        <!-- <div class="input-with-icon">
-          <input type="text" v-model="queryParams.parentProductName" placeholder="目的地検索" @input="inputChange">
-          <span class="icon" @click="getSearchList"></span>
-        </div> -->
-        <div class="autocomplete">
-          <input 
-            type="text" 
-            v-model="queryParams.parentProductName" 
-            @input="onInput" 
-            placeholder="目的地検索" 
-          />
-          <span class="icon" @click="getSearchList"></span>
-          <div v-if="suggestions.length && userId" class="suggestions">
-            <div 
-              v-for="suggestion in suggestions" 
-              :key="suggestion.id" 
-              @click="selectSuggestion(suggestion)"
-              class="suggestion"
-            >
-              <div>{{ suggestion.productName }}</div>
-              <div>{{ suggestion.symbol }} {{ suggestion.unitPrice }}</div>
+        <div class="autocomplete" >
+            <el-input
+              type="text"
+              v-model="queryParams.parentProductName" 
+              @input="onInput" 
+              @blur="handleBlur"
+              @focus="handlefocus"
+              placeholder="目的地検索" 
+            />
+            <span class="icon" @click="getSearchList"></span>
+            <div v-if="suggestions.length > 0" class="suggestions">
+              <div 
+                v-for="suggestion in suggestions" 
+                :key="suggestion.id"
+                @click="selectSuggestion(suggestion)"
+                class="suggestion">
+                <div>{{ suggestion.productName }}</div>
+                <div>{{ suggestion.symbol }} {{ suggestion.unitPrice }}</div>
+              </div>
+            </div>
+            <div v-if="suggestions.length == 0 && isSHowEmpty" class="suggestions">
+              <div class="jiaz">ロード中、しばらくお待ちください...</div>
             </div>
           </div>
-          <div v-if="suggestions.length && !userId" class="suggestions">
-            <div class="jiaz">ロード中、しばらくお待ちください...</div>
-          </div>
-        </div>
       </div>
       <div class="content" v-if="!diable">
         <div class="popular">
@@ -44,6 +41,7 @@
           <div class="cardItem" v-for="(item, index) in cardList" :key="item.id" @click="godays(item)">
             <img v-if="item.flagImage" :src="item.flagImage" class="pimg">
             <div class="name">{{ item.parentProductName }}</div>
+            <!-- <div class="name">シンガポールシンガポール</div> -->
           </div>
         </div>
         <div class="history" v-if="historyList.length > 0">購入履歴</div>
@@ -120,7 +118,7 @@
 </template>
 
 <script>
-import { countryManageList, parentlistAnonymous,lineSearchProductList,lineUser,buyHistory,lineUserInfo } from '@/api/tablation'
+import { countryManageList, parentlistAnonymous,lineSearchProductList,lineUser,buyHistory,lineUserInfo,getHotCountry } from '@/api/tablation'
 import days from './days.vue';
 import productType from './productType.vue'
 import products from './products.vue'
@@ -130,62 +128,7 @@ export default {
     return {
       countryList: [],
       cardList: [
-        {
-          "createBy": null,
-          "createTime": null,
-          "updateBy": null,
-          "updateTime": null,
-          "remark": null,
-          "id": 9,
-          "englishName": "Korea",
-          "chineseName": "韩国",
-          "parentProductName": "韓国",
-          "region": "亚洲",
-          "flagImage": "https://mp.desim.tech/api/profile/flag/2024/04/12/kr_20240412072514A002.png",
-          "isHot": 1
-        },
-        {
-          "createBy": null,
-          "createTime": null,
-          "updateBy": null,
-          "updateTime": null,
-          "remark": null,
-          "id": 4,
-          "englishName": "Taiwan",
-          "chineseName": "中国台湾",
-          "parentProductName": "台湾",
-          "region": "亚洲",
-          "flagImage": "https://mp.desim.tech/api/profile/flag/2024/05/11/tw.webp_20240511101619A001.jpg",
-          "isHot": 1
-        },
-        {
-          "createBy": null,
-          "createTime": null,
-          "updateBy": null,
-          "updateTime": null,
-          "remark": null,
-          "id": 20,
-          "englishName": "Thailand",
-          "chineseName": "泰国",
-          "parentProductName": "タイ",
-          "region": "亚洲",
-          "flagImage": "https://mp.desim.tech/api/profile/flag/2024/04/12/th_20240412074529A007.png",
-          "isHot": 1
-        },
-        {
-          "createBy": null,
-          "createTime": null,
-          "updateBy": null,
-          "updateTime": null,
-          "remark": null,
-          "id": 223,
-          "englishName": "USA",
-          "chineseName": "美国",
-          "parentProductName": "アメリカ",
-          "region": "美洲",
-          "flagImage": "https://mp.desim.tech/api/profile/flag/2024/05/11/us.webp_20240511101635A002.jpg",
-          "isHot": 1
-        }
+        
       ],
       queryParams: {
         pageNum: 1,
@@ -216,24 +159,95 @@ export default {
 			simSelection: 0,
 			esimSelection: 0,
 			showTip: false,
-      diables: false
+      diables: false,
+      isSHowEmpty: false
     };
   },
   created() {
     this.init()
+    this.getHotCountryList()
     // this.getbuyHistoryList()
   },
+ 
   methods: {
     async init() {
+      console.log('liff')
       // 正式环境LineId:2003804589-8E07K6bN
       // 测试环境LineId:2003687931-w55JjYzE
       await liff.init({ liffId: '2003804589-8E07K6bN' })
       const res = liff.getContext()
+      console.log('liff',liff)
       this.userId = res.userId
       this.queryParams.userId = res.userId
       if(this.userId) {
         this.getbuyHistoryList(this.userId)
       }
+    },
+    getHotCountryList() {
+      getHotCountry({}).then(res => {
+        res.data.forEach(item => {
+          item.parentProductName = item.japaneseName
+        })
+        let arr = [
+          {
+            "createBy": null,
+            "createTime": null,
+            "updateBy": null,
+            "updateTime": null,
+            "remark": null,
+            "id": 9,
+            "englishName": "Korea",
+            "chineseName": "韩国",
+            "parentProductName": "韓国",
+            "region": "亚洲",
+            "flagImage": "https://mp.desim.tech/api/profile/flag/2024/04/12/kr_20240412072514A002.png",
+            "isHot": 1
+          },
+          {
+            "createBy": null,
+            "createTime": null,
+            "updateBy": null,
+            "updateTime": null,
+            "remark": null,
+            "id": 4,
+            "englishName": "Taiwan",
+            "chineseName": "中国台湾",
+            "parentProductName": "台湾",
+            "region": "亚洲",
+            "flagImage": "https://mp.desim.tech/api/profile/flag/2024/05/11/tw.webp_20240511101619A001.jpg",
+            "isHot": 1
+          },
+          {
+            "createBy": null,
+            "createTime": null,
+            "updateBy": null,
+            "updateTime": null,
+            "remark": null,
+            "id": 20,
+            "englishName": "Thailand",
+            "chineseName": "泰国",
+            "parentProductName": "タイ",
+            "region": "亚洲",
+            "flagImage": "https://mp.desim.tech/api/profile/flag/2024/04/12/th_20240412074529A007.png",
+            "isHot": 1
+          },
+          {
+            "createBy": null,
+            "createTime": null,
+            "updateBy": null,
+            "updateTime": null,
+            "remark": null,
+            "id": 223,
+            "englishName": "USA",
+            "chineseName": "美国",
+            "parentProductName": "アメリカ",
+            "region": "美洲",
+            "flagImage": "https://mp.desim.tech/api/profile/flag/2024/05/11/us.webp_20240511101635A002.jpg",
+            "isHot": 1
+          }
+        ]
+        this.cardList = [...arr,...res.data]
+      })
     },
     async getSearchList() {
       const res = await parentlistAnonymous(this.queryParams)
@@ -248,6 +262,8 @@ export default {
         this.keys = this.queryParams.parentProductName
         this.isshow = false
         this.isDays = true
+        // this.queryParams.parentProductName = ''
+        // this.suggestions = []
       } else {
         this.diable = true
         this.keyWords = this.queryParams.parentProductName
@@ -260,30 +276,43 @@ export default {
         this.historyList = res.data
       }
     },
-    // async inputChange(val) {
-    //   const res = await lineSearchProductList({ platformIds: '3',parentProductName: this.queryParams.parentProductName,pageSize: 10 })
-    // },
-    async onInput() {
+    async onInput(value) {
       const query = this.queryParams.parentProductName.toLowerCase();
       const res = await lineSearchProductList({ platformIds: '3',parentProductName: this.queryParams.parentProductName,pageSize: 5,userId: this.userId })
       this.suggestions = res.rows
-      // this.suggestions = res.rows.filter(suggestion =>
-      //   suggestion.productName.toLowerCase().includes(query)
-      // );
+      if(this.suggestions.length > 0 || value == '') {
+        this.isSHowEmpty = false
+      }else {
+        this.isSHowEmpty = true
+      }
+    },
+    async handlefocus() {
+      // console.log(this.queryParams.parentProductName)
+      if(this.queryParams.parentProductName) {
+        const query = this.queryParams.parentProductName.toLowerCase();
+        const res = await lineSearchProductList({ platformIds: '3',parentProductName: this.queryParams.parentProductName,pageSize: 5,userId: this.userId })
+        this.suggestions = res.rows
+        if(this.suggestions.length > 0 || value == '') {
+          this.isSHowEmpty = false
+        }else {
+          this.isSHowEmpty = true
+        }
+      }
+    },
+    handleBlur() {
+      this.isSHowEmpty = false
+      let that = this
+      setTimeout(() => {
+        // that.queryParams.parentProductName = ''
+        that.suggestions = []
+      },500)
+      
     },
     selectSuggestion(suggestion) {
-      // this.queryParams.parentProductName = suggestion.productName;
       this.data = suggestion
       this.diables = true
+      // this.queryParams.parentProductName = ''
       this.suggestions = [];
-      
-      // if (suggestion.productLink && this.userId!= '') {
-      //   lineUser({ userId: this.userId }).then(res => {
-      //     const variantId = suggestion.productLink.split('variant=')[1]
-      //     window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
-      //     this.queryParams.parentProductName = ''
-      //   })
-      // }
     },
     closeDia() {
 			this.simSelection = 0
@@ -303,15 +332,6 @@ export default {
     godown(item) {
       this.data = item
       this.diables = true
-      // lineUserInfo({ userId: this.userId }).then(res => {
-      //   if(res.rows[0].esimSelection == 1 && res.rows[0].simSelection == 1) {
-      //     this.diables = false
-      //     const variantId = this.data.productLink.split('variant=')[1]
-			// 		window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[line]=line&attributes[userId]=${this.userId}&ref=line`
-      //   }else {
-      //     this.diables = true
-      //   }
-      // })
 			
 		},
 		goShopify() {
@@ -324,8 +344,11 @@ export default {
           this.queryParams.parentProductName = ''
 					const variantId = this.data.productLink.split('variant=')[1]
 					const url= `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
-          // alert(url)
-					window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
+          // const variantId = '46534566510824'
+          // console.log(this.userId, this.simSelection, this.esimSelection)
+					// const url= `https://test78607.myshopify.com/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
+          // alert(url) 
+					window.location.href = url
 				})
 			}
 		},
@@ -497,7 +520,7 @@ export default {
       padding: 0 20px;
     }
 
-    .autocomplete input {
+    .insty {
       padding-right: 30px;
       /* 留出图标的空间 */
       width: 100%;
@@ -513,7 +536,18 @@ export default {
       outline: none;
       box-shadow: 0 2px 4px #FBEB63;
     }
-
+    ::v-deep .el-input--medium .el-input__inner {
+      height: 44px;
+      line-height: 44px;
+      padding-right: 30px;
+      width: 100%;
+      border-radius: 10px;
+      color: #9CA3AF;
+      outline: none;
+      box-shadow: 0 2px 4px #FBEB63;
+      margin-top: 10px;
+      padding-left: 10px;
+    }
     ::placeholder {
       font-size: 16px;
       color: #9CA3AF;
@@ -522,7 +556,7 @@ export default {
     .icon {
       content: "";
       position: absolute;
-      top: 50%;
+      top: 57%;
       right: 30px;
       transform: translateY(-50%);
       background-image: url("../assets//images/search.png");
@@ -558,17 +592,17 @@ export default {
 
     .card {
       margin-top: 20px;
-
+      display: flex;
+      flex-wrap: wrap; 
+      justify-content: space-between; 
       .cardItem {
-        width: 100%;
+        width: 48%;
         height: 60px;
-        // background-color: #fff;
         border-radius: 8px;
         margin-bottom: 16px;
         padding-left: 10px;
         display: flex;
         align-items: center;
-        // box-shadow: 0 2px 4px #FFD457;
         background-image: url('../assets/images/frame13.png');
         background-size: 100% 100%;
         cursor: pointer;

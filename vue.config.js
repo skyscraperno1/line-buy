@@ -37,7 +37,7 @@ module.exports = {
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
         target: `https://mp.desim.tech/api`,
-        //  target: 'http://192.168.1.111:10101',
+        //  target: 'http://192.168.3.2:10101',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''

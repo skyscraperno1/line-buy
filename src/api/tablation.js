@@ -62,3 +62,11 @@ export function buyHistory(params) {
     params
   })
 }
+// 首页国家推荐
+export function getHotCountry(params) {
+  return request({
+    url: '/business/countryManage/getHotCountry',
+    method: 'get',
+    params
+  })
+}
