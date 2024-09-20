@@ -73,6 +73,31 @@
         </div>
       </div>
 
+    <div class="content1" v-if="parentProductName">
+      <div class="hotProduct" >HOT商品</div>
+      <div class="esimCard">
+        <div class="esimCardItem" v-for="(item, index) in hotList" :key="index">
+          <div class="cont">
+            <div class="imgdiv" v-if="item.flagImage"><img :src="item.flagImage" class="nationalIcon"></div>
+            <div class="card_title">{{ item.country }} eSIM</div>
+            <div class="card_desc">
+              <img src="../assets/images/Frame8.png">
+              <span>{{ item.days }}日間</span>
+            </div>
+            <div class="card_sub">{{ item.productName }}</div>
+            <div class="unlimited">
+              <div class="unides" v-if="item.unitPrice">
+                <span style="margin-right: 5px;">{{ item.symbol }}</span>
+                <span>{{ item.unitPrice.toLocaleString() }} </span><span
+                  style="font-size: 12px;font-weight: bold;">(税込)</span>
+              </div>
+              <img v-if="item.productLink" src="../assets/images/Frame7.png" @click="godown(item)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
       <div class="confirm_card" v-if="diable">
         <div class="subD">「{{ keyWords }}（国・地域）」でご利用可能なeSIMのプランは現在準備中です。</div>
         <div class="subD">発売予定については、LINE公式カスタマーサービスにてお問い合わせください。</div>
@@ -160,12 +185,22 @@ export default {
 			esimSelection: 0,
 			showTip: false,
       diables: false,
-      isSHowEmpty: false
+      isSHowEmpty: false,
+      hotList: [],
+      parentProductName: ''
     };
   },
   created() {
+    let url = new URL(window.location.href);
+    let params = new URLSearchParams(url.search);
+    let decodedString = decodeURIComponent(params);
+    const parentProductName = decodedString.match(/parentProductName=([^&]*)/);
+    if(parentProductName){
+      this.parentProductName = parentProductName[1]
+    }
     this.init()
     this.getHotCountryList()
+    // this.getHotProduct()
     // this.getbuyHistoryList()
   },
  
@@ -181,8 +216,21 @@ export default {
       this.queryParams.userId = res.userId
       if(this.userId) {
         this.getbuyHistoryList(this.userId)
+        this.getHotProduct()
       }
     },
+    async getHotProduct() {
+            const data = {
+                platformIds: '3',
+                pageSize: 4, 
+                userId: this.userId,
+                parentProductName: this.parentProductName
+            }
+            const res = await lineSearchProductList(data)
+            if (res.rows.length > 0) {
+                this.hotList = res.rows
+            }
+        },
     getHotCountryList() {
       getHotCountry({}).then(res => {
         res.data.forEach(item => {
@@ -891,6 +939,108 @@ export default {
       background: #004B84;
       color: #FAFCFE;
       margin-top: 30px;
+    }
+  }
+  .content1 {
+    width: 100%;
+    padding: 20px;
+
+    .hotProduct {
+      color: #000;
+      font-size: 18px;
+      font-weight: bold;
+      height: 60px;
+      line-height: 60px;
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid #d5d6da;
+    }
+
+    .esimCard {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      width: 100%;
+      // margin: 30px auto;
+
+      .esimCardItem {
+        flex-basis: 48%;
+        box-sizing: border-box;
+        background-image: url(../assets/images/frame15.png);
+        background-size: 100%, 100%;
+        width: 155px;
+        height: 250px;
+        object-fit: cover;
+        margin-bottom: 20px;
+        position: relative;
+        padding: 15px 10px;
+        background-repeat: no-repeat;
+        .cont {
+          position: absolute;
+          width: 90%;
+
+          .imgdiv {
+            width: 57px;
+            height: 42.84px;
+            border: 1px solid #EFF3F8;
+            border-radius: 10px;
+            margin-bottom: 20px;
+
+            .nationalIcon {
+              width: 55px;
+              height: 42.84px;
+              object-fit: cover;
+            }
+          }
+
+          .card_title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+          }
+
+          .card_desc {
+            font-size: 12px;
+            color: #4E637E;
+            display: flex;
+            align-items: center;
+
+            img {
+              width: 16px;
+              height: 16px;
+              margin-right: 6px;
+
+            }
+          }
+
+          .card_sub {
+            font-size: 12px;
+            color: #1A1A1A;
+            height: 30px;
+          }
+
+          .unlimited {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
+            width: 100%;
+
+            .unides {
+              font-size: 16px;
+              font-weight: bold;
+              color: #000;
+              // margin-right: 30px;
+            }
+
+            img {
+              width: 30px;
+              height: 30px;
+            }
+          }
+        }
+
+      }
     }
   }
 </style>
