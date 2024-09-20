@@ -60,7 +60,12 @@ export const constantRoutes = [
     path: '/products',
     component: () => import('@/views/products'),
     hidden: true
-  }
+  },
+  {
+    path: '/hotProducts',
+    component: () => import('@/views/hotProducts'),
+    hidden: true
+  },
   // {
   //   path: '/register',
   //   component: () => import('@/views/register'),
