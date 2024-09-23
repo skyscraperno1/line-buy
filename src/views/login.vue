@@ -73,7 +73,7 @@
         </div>
       </div>
 
-    <div class="content1" v-if="parentProductName">
+    <div class="content1" v-if="parentProductName && hotList.length > 0">
       <div class="hotProduct" >HOT商品</div>
       <div class="esimCard">
         <div class="esimCardItem" v-for="(item, index) in hotList" :key="index">
@@ -195,12 +195,16 @@ export default {
     let params = new URLSearchParams(url.search);
     let decodedString = decodeURIComponent(params);
     const parentProductName = decodedString.match(/parentProductName=([^&]*)/);
+    const userId = decodedString.match(/userId=([^&]*)/);
     if(parentProductName){
       this.parentProductName = parentProductName[1]
     }
+    if(userId){
+      this.userId = userId[1]
+    }
     this.init()
     this.getHotCountryList()
-    // this.getHotProduct()
+    this.getHotProduct()
     // this.getbuyHistoryList()
   },
  
@@ -216,7 +220,6 @@ export default {
       this.queryParams.userId = res.userId
       if(this.userId) {
         this.getbuyHistoryList(this.userId)
-        this.getHotProduct()
       }
     },
     async getHotProduct() {
