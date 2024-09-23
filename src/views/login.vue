@@ -187,7 +187,8 @@ export default {
       diables: false,
       isSHowEmpty: false,
       hotList: [],
-      parentProductName: ''
+      parentProductName: '',
+      days: ''
     };
   },
   created() {
@@ -196,11 +197,15 @@ export default {
     let decodedString = decodeURIComponent(params);
     const parentProductName = decodedString.match(/parentProductName=([^&]*)/);
     const userId = decodedString.match(/userId=([^&]*)/);
+    const days = decodedString.match(/days=([^&]*)/);
     if(parentProductName){
       this.parentProductName = parentProductName[1]
     }
     if(userId){
       this.userId = userId[1]
+    }
+    if(days){
+      this.days = days[1]
     }
     this.init()
     this.getHotCountryList()
@@ -227,7 +232,8 @@ export default {
                 platformIds: '3',
                 pageSize: 4, 
                 userId: this.userId,
-                parentProductName: this.parentProductName
+                parentProductName: this.parentProductName,
+                days: this.days
             }
             const res = await lineSearchProductList(data)
             if (res.rows.length > 0) {
