@@ -70,3 +70,12 @@ export function getHotCountry(params) {
     params
   })
 }
+
+// 首页国家推荐
+export function getByProductPdf(params) {
+  return request({
+    url: '/open/lineController/addUserIdByProductPdf',
+    method: 'get',
+    params
+  })
+}

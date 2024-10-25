@@ -62,8 +62,8 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/hotProducts',
-    component: () => import('@/views/hotProducts'),
+    path: '/pdfProducts',
+    component: () => import('@/views/pdfProducts'),
     hidden: true
   },
   // {
