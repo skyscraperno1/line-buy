@@ -87,7 +87,6 @@
           type: 1,
           platformIds: 3
         }
-        console.log(this.form,'form')
         lineProductList(queryParams).then(res => {
           if(res.rows && res.rows.length > 0) {
             // this.$router.push({
