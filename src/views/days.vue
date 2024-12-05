@@ -217,7 +217,8 @@ export default {
             'keyWords': this.keys + item.name,
             'userId': this.userId
           }
-          this.$emit('daySon', obj)
+          this.$emit('productTypeSon',obj)
+          // this.$emit('daySon', obj)
         } else {
           this.diable = true
           this.keyWords = item.name

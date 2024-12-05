@@ -135,8 +135,8 @@
     </div>
 
     <!-- 组件 -->
-    <days v-if="isDays" :parentProductIds="parentProductIds" :flagImage="flagImage" :keys="keys" :userId="userId"  @daySon="getDayVal"/>
-    <productType v-if="isProductType" :dayForm="dayForm" @productTypeSon="getProductTypeVal"/>
+    <days v-if="isDays" :parentProductIds="parentProductIds" :flagImage="flagImage" :keys="keys" :userId="userId"  @productTypeSon="getProductTypeVal"/>
+    <!-- <productType v-if="isProductType" :dayForm="dayForm" @productTypeSon="getProductTypeVal"/> -->
     <products v-if="isProduct" :productTypeForm="productTypeForm" />
   </div>
 
@@ -473,7 +473,7 @@ export default {
       this.isProductType = false
     },
     fatherProductMethod() {
-      this.isProductType = true
+      this.isDays = true
       this.isProduct = false
     },
     // isShowProductType() {
