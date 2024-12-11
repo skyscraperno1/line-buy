@@ -10,16 +10,16 @@
         <div class="autocomplete" >
             <el-input
               type="text"
-              v-model="queryParams.parentProductName" 
-              @input="onInput" 
+              v-model="queryParams.parentProductName"
+              @input="onInput"
               @blur="handleBlur"
               @focus="handlefocus"
-              placeholder="目的地検索" 
+              placeholder="目的地検索"
             />
             <span class="icon" @click="getSearchList"></span>
             <div v-if="suggestions.length > 0" class="suggestions">
-              <div 
-                v-for="suggestion in suggestions" 
+              <div
+                v-for="suggestion in suggestions"
                 :key="suggestion.id"
                 @click="selectSuggestion(suggestion)"
                 class="suggestion">
@@ -153,7 +153,7 @@ export default {
     return {
       countryList: [],
       cardList: [
-        
+
       ],
       queryParams: {
         pageNum: 1,
@@ -212,13 +212,13 @@ export default {
     this.getHotProduct()
     // this.getbuyHistoryList()
   },
- 
+
   methods: {
     async init() {
       console.log('liff')
-      // 正式环境LineId:2003804589-8E07K6bN
+      // 正式环境LineId:2003804589-8E07K6bN 2003804589-Y3o4OJG9
       // 测试环境LineId:2003687931-w55JjYzE
-      await liff.init({ liffId: '2003804589-8E07K6bN' })
+      await liff.init({ liffId: '2003804589-Y3o4OJG9' })
       const res = liff.getContext()
       console.log('liff',liff)
       this.userId = res.userId
@@ -230,7 +230,7 @@ export default {
     async getHotProduct() {
             const data = {
                 platformIds: '3',
-                pageSize: 4, 
+                pageSize: 4,
                 userId: this.userId,
                 parentProductName: this.parentProductName,
                 days: this.days
@@ -325,7 +325,7 @@ export default {
         this.diable = true
         this.keyWords = this.queryParams.parentProductName
       }
-      
+
     },
     async getbuyHistoryList() {
       const res = await buyHistory({ userId: this.userId })
@@ -363,7 +363,7 @@ export default {
         // that.queryParams.parentProductName = ''
         that.suggestions = []
       },500)
-      
+
     },
     selectSuggestion(suggestion) {
       this.data = suggestion
@@ -389,7 +389,7 @@ export default {
     godown(item) {
       this.data = item
       this.diables = true
-			
+
 		},
 		goShopify() {
 			if(this.simSelection == 0 || this.esimSelection == 0) {
@@ -404,7 +404,7 @@ export default {
           // const variantId = '46534566510824'
           // console.log(this.userId, this.simSelection, this.esimSelection)
 					// const url= `https://test78607.myshopify.com/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
-          // alert(url) 
+          // alert(url)
 					window.location.href = url
 				})
 			}
@@ -456,7 +456,7 @@ export default {
     fatherMethod() {
       this.isDays = true
       this.isshow = false
-      
+
     },
     fatherMethods() {
       this.isDays = false
@@ -650,8 +650,8 @@ export default {
     .card {
       margin-top: 20px;
       display: flex;
-      flex-wrap: wrap; 
-      justify-content: space-between; 
+      flex-wrap: wrap;
+      justify-content: space-between;
       .cardItem {
         width: 48%;
         height: 60px;
