@@ -400,7 +400,7 @@ export default {
 				lineUser({ userId: this.userId}).then(res => {
           this.queryParams.parentProductName = ''
 					const variantId = this.data.productLink.split('variant=')[1]
-					const url= `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
+					const url= `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[imei]=${this.imei}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
           // const variantId = '46534566510824'
           // console.log(this.userId, this.simSelection, this.esimSelection)
 					// const url= `https://test78607.myshopify.com/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`

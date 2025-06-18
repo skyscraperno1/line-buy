@@ -13,8 +13,13 @@
         <span>滞在日数</span>
       </div>
       <div class="card">
-        <div class="cardItem" v-for="(item, index) in cardList" :key="item.id" @click="godown(item)">
-          <div class="name">{{ item.name }}</div>
+        <div class="cardItem">
+          <div class="select-container">
+            <select v-model="selectedDays" class="days-select" @change="handleDaysChange">
+              <option value="" disabled>滞在日数を選択してください</option>
+              <option v-for="day in 30" :key="day" :value="day">{{ day }}日間</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="hotProduct" v-if="hotList">HOT商品</div>
@@ -102,6 +107,7 @@ export default {
   },
   data() {
     return {
+      selectedDays: '',
       // parentProductIds: '',
       // flagImage: '',
       cardList: [
@@ -114,9 +120,9 @@ export default {
       keyWords: '',
       hotList: [],
       data: {},
-			simSelection: 0,
-			esimSelection: 0,
-			showTip: false,
+      simSelection: 0,
+      esimSelection: 0,
+      showTip: false,
       diables: false
     };
   },
@@ -145,48 +151,56 @@ export default {
       this.$parent.fatherMethod();
     },
     closeDia() {
-			this.simSelection = 0
-			this.esimSelection = 0
-			this.diables = false
-		},
-		closeShowTip() {
-			this.showTip = false
-		},
+      this.simSelection = 0
+      this.esimSelection = 0
+      this.diables = false
+    },
+    closeShowTip() {
+      this.showTip = false
+    },
     selectChoose(key,val) {
-			if(key == 'esimSelection') {
-				this.esimSelection = val
-			}else {
-				this.simSelection = val
-			}
-		},
+      if(key == 'esimSelection') {
+        this.esimSelection = val
+      }else {
+        this.simSelection = val
+      }
+    },
     godowns(item) {
-			this.data = item
+      this.data = item
       this.diables = true
       // lineUserInfo({ userId: this.userId }).then(res => {
       //   if(res.rows[0].esimSelection == 1 && res.rows[0].simSelection == 1) {
       //     this.diables = false
       //     const variantId = this.data.productLink.split('variant=')[1]
-			// 		window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[line]=line&attributes[userId]=${this.userId}&ref=line`
+      // 		window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[line]=line&attributes[userId]=${this.userId}&ref=line`
       //   }else {
 
       //     this.diables = true
       //   }
       // })
-		},
-		goShopify() {
-			if(this.simSelection == 0 || this.esimSelection == 0) {
-				this.showTip = true
-				return
-			}
-			if (this.data.productLink) {
-				lineUser({ userId: this.userId}).then(res => {
-					const variantId = this.data.productLink.split('variant=')[1]
-					const url = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
-					// alert(url)
+    },
+    goShopify() {
+      if(this.simSelection == 0 || this.esimSelection == 0) {
+        this.showTip = true
+        return
+      }
+      if (this.data.productLink) {
+        lineUser({ userId: this.userId}).then(res => {
+          const variantId = this.data.productLink.split('variant=')[1]
+          const url = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
+          // alert(url)
           window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
-				})
-			}
-		},
+        })
+      }
+    },
+    handleDaysChange() {
+      const item = {
+        startDays: this.selectedDays,
+        endDays: this.selectedDays,
+        name: `${this.selectedDays}日間`
+      };
+      this.godown(item);
+    },
     godown(item) {
       const queryParams = {
         parentProductIds: this.parentProductIds,
@@ -600,6 +614,34 @@ export default {
       background: #004B84;
       color: #FAFCFE;
       margin-top: 30px;
+    }
+  }
+
+  .select-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .days-select {
+    width: 80%;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 16px;
+    color: #6B7280;
+    background-color: transparent;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
     }
   }
 </style>
