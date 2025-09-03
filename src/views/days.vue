@@ -17,7 +17,7 @@
           <div class="select-container">
             <select v-model="selectedDays" class="days-select" @change="handleDaysChange">
               <option value="" disabled>滞在日数を選択してください</option>
-              <option v-for="day in 30" :key="day" :value="day">{{ day }}日間</option>
+              <option v-for="day in daysList" :key="day" :value="day">{{ day }}日間</option>
             </select>
           </div>
         </div>
@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import { lineProductList, lineSearchProductList,lineUserInfo,lineUser } from '@/api/tablation'
+import { lineProductList, lineSearchProductList,getDaysByCountry,lineUser } from '@/api/tablation'
 export default {
   props: {
     parentProductIds: {
@@ -107,6 +107,7 @@ export default {
   },
   data() {
     return {
+      daysList: [],
       selectedDays: '',
       // parentProductIds: '',
       // flagImage: '',
@@ -133,6 +134,7 @@ export default {
     // this.userId = this.$route.query.userId
     // console.log(this.parentProductIds,this.flagImage,this.keys)
     this.getHotProduct()
+    this.getDays()
   },
   methods: {
     async getHotProduct() {
@@ -140,6 +142,10 @@ export default {
       if (res.rows.length > 0) {
         this.hotList = res.rows
       }
+    },
+    async getDays() {
+      const res = await getDaysByCountry(this.keys)
+      this.daysList = res.data
     },
     gore() {
       // console.log(111)

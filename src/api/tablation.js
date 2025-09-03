@@ -79,3 +79,10 @@ export function getByProductPdf(params) {
     params
   })
 }
+
+export function getDaysByCountry(country) {
+  return request({
+    url: '/joyProduct/listing/lineProductDaysList?parentProductName=' + country,
+    method: 'get'
+  })
+}
