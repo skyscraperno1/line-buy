@@ -1,78 +1,88 @@
 <template>
   <div class="container">
     <div class="hero">
-      <img src="../assets/images/frame17.png" class="topImg">
+      <progress-bar :activeStep="2" />
+      <arrow-back
+        :onClick="gore"
+        style="margin-top: 12px; margin-bottom: -6px"
+      />
       <div class="desc">現地での滞在日数は？</div>
-      <img src="../assets/images/frame1.png" class="tim">
-      <!-- <el-button type="primary" icon="el-icon-arrow-left" size="mini" class="backClass" @click="gore"></el-button> -->
-      <img src="../assets/images/frame11.png" class="backClass" @click="gore">
+      <img src="../assets/images/frame1.png" class="tim" />
     </div>
     <div class="content" v-if="!diable">
       <div class="popular">
-        <img src="../assets/images/frame12.png">
-        <span>滞在日数</span>
+        <div class="step-wrapper">STEP2</div>
       </div>
+      <div class="chosen-item">
+        <img :src="flagImage" />
+        <div>{{ keys }}</div>
+      </div>
+      <div class="unchosen-item">滞在日数</div>
       <div class="card">
         <div class="cardItem">
           <div class="select-container">
-            <select v-model="selectedDays" class="days-select" @change="handleDaysChange">
+            <select
+              v-model="selectedDays"
+              class="days-select"
+              @change="handleDaysChange"
+            >
               <option value="" disabled>滞在日数を選択してください</option>
-              <option v-for="day in daysList" :key="day" :value="day">{{ day }}日間</option>
+              <option v-for="day in daysList" :key="day" :value="day">
+                {{ day }}日間
+              </option>
             </select>
           </div>
         </div>
       </div>
-      <div class="hotProduct" v-if="hotList">HOT商品</div>
-      <div class="esimCard" v-if="hotList">
-        <div class="esimCardItem" v-for="(item, index) in hotList" :key="index">
-          <div class="cont">
-            <div class="imgdiv" v-if="item.flagImage"><img :src="item.flagImage" class="nationalIcon"></div>
-            <div class="card_title">{{ item.country }} eSIM</div>
-            <div class="card_desc">
-              <img src="../assets/images/Frame8.png">
-              <span>{{ item.days }}日間</span>
-            </div>
-            <div class="card_sub">{{ item.productName }}</div>
-            <div class="unlimited">
-              <div class="unides" v-if="item.unitPrice">
-                <span style="margin-right: 5px;">{{ item.symbol }}</span>
-                <span>{{ item.unitPrice.toLocaleString() }} </span><span
-                  style="font-size: 12px;font-weight: bold;">(税込)</span>
+      <div class="hotProduct" v-if="hotList.length">HOT商品</div>
+      <div class="esimCard" v-if="hotList.length">
+        <div
+          class="esimCardItem"
+          v-for="(item, index) in hotList"
+          :key="index"
+          :class="{ 'unlimited-card': index === 0 }"
+        >
+          <div class="left-image">
+            <img :src="getShowImage(item)" @error="handleImageError($event, item)"/>
+          </div>
+          <div class="right-text">
+            <div class="product-title">{{ item.productName }}</div>
+            <div class="product-days">
+              <div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                >
+                  <path
+                    d="M13.5499 7.08988C13.5499 10.6599 10.6599 13.5499 7.08989 13.5499C3.51989 13.5499 0.629883 10.6599 0.629883 7.08988C0.629883 3.51988 3.51989 0.629883 7.08989 0.629883C10.6599 0.629883 13.5499 3.51988 13.5499 7.08988Z"
+                    stroke="#6B7280"
+                    stroke-width="1.26"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M9.47961 8.29986L6.84961 6.72986V3.34985"
+                    stroke="#6B7280"
+                    stroke-width="1.26"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               </div>
-              <img v-if="item.productLink" src="../assets/images/Frame7.png" @click="godowns(item)">
+              <div>{{ item.days }}日間</div>
             </div>
+            <div class="product-price">
+              {{ item.symbol }}{{ item.unitPrice.toLocaleString() }}
+              <span>(税込)</span>
+            </div>
+            <button class="product-btn" @click="godowns(item)">購入</button>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="bg" v-if="diables">
-        <div class="confirm_cardss">
-          <img src="../assets/images/frame20.png" class="closeImg" @click="closeDia">
-          <div class="subD">
-            <img src="../assets/images/frame21.png" v-if="esimSelection == 0" class="sel" @click="selectChoose('esimSelection',1)">
-            <img src="../assets/images/frame22.png" v-if="esimSelection == 1" class="sel" @click="selectChoose('esimSelection',0)">
-            <span style="letter-spacing: 2px;">eSIM対応端末です</span>
-          </div>
-          <div class="subD">
-            <img src="../assets/images/frame21.png" v-if="simSelection == 0" class="sel" @click="selectChoose('simSelection',1)">
-            <img src="../assets/images/frame22.png" v-if="simSelection == 1" class="sel" @click="selectChoose('simSelection',0)">
-            <span style="letter-spacing: 2px;">SIM ロック解除済み端末です</span>
-          </div>
-          <div class="confirmBtn" @click="goShopify">
-            <img src="../assets/images/frame24.png" class="com">
-          </div>
-        </div>
-      </div>
-      <div class="bg" v-if="showTip">
-          <div class="confirm_cards">
-            <div class="subTit">おっと!</div>
-            <div class="subDs">
-              チェックしてください
-            </div>
-            <div class="subBtn" @click="closeShowTip">了解</div>
-          </div>
-      </div>
 
     <div class="confirm_card" v-if="diable">
       <!-- <div class="subD">「{{ keys }}{{ keyWords }}」以内のeSIM商品は準備中。</div> -->
@@ -86,8 +96,17 @@
 </template>
 
 <script>
-import { lineProductList, lineSearchProductList,getDaysByCountry,lineUser } from '@/api/tablation'
+import {
+  lineProductList,
+  lineSearchProductList,
+  getDaysByCountry,
+  lineUser,
+} from "@/api/tablation";
+import ProgressBar from "@/components/ProgressBar/index.vue";
+import ArrowBack from "@/components/ArrowBack/index.vue";
+
 export default {
+  components: { ProgressBar, ArrowBack },
   props: {
     parentProductIds: {
       type: String,
@@ -103,28 +122,26 @@ export default {
     // },
     userId: {
       type: String,
-    }
+    },
   },
   data() {
     return {
       daysList: [],
-      selectedDays: '',
+      selectedDays: "",
       // parentProductIds: '',
       // flagImage: '',
       cardList: [
-        { id: 1, name: '3日間以内', startDays: 1, endDays: 3 },
-        { id: 2, name: '7日間以内', startDays: 4, endDays: 7 },
-        { id: 3, name: '15日間以内', startDays: 8, endDays: 15 },
-        { id: 4, name: '30日間以内', startDays: 16, endDays: 30 }
+        { id: 1, name: "3日間以内", startDays: 1, endDays: 3 },
+        { id: 2, name: "7日間以内", startDays: 4, endDays: 7 },
+        { id: 3, name: "15日間以内", startDays: 8, endDays: 15 },
+        { id: 4, name: "30日間以内", startDays: 16, endDays: 30 },
       ],
       diable: false,
-      keyWords: '',
+      keyWords: "",
       hotList: [],
       data: {},
-      simSelection: 0,
-      esimSelection: 0,
-      showTip: false,
-      diables: false
+      simSelection: 1,
+      esimSelection: 1,
     };
   },
   created() {
@@ -133,22 +150,40 @@ export default {
     // this.key = this.$route.query.key
     // this.userId = this.$route.query.userId
     // console.log(this.parentProductIds,this.flagImage,this.keys)
-    this.getHotProduct()
-    this.getDays()
+    this.getHotProduct();
+    this.getDays();
   },
   methods: {
+    handleImageError(e, item) {
+      e.target.src = item.flagImage
+    },
+    getShowImage(item) {
+      if (item.productImage) {
+        if (item.productImage.includes(',')) {
+          return item.productImage.split(',')[0]
+        } else {
+          return item.productImage
+        }
+      } else {
+        return item.flagImage
+      }
+    },
     async getHotProduct() {
-      const res = await lineSearchProductList({ platformIds: '3', parentProductName: this.keys,pageSize: 4, userId: this.userId })
+      const res = await lineSearchProductList({
+        platformIds: "3",
+        parentProductName: this.keys,
+        pageSize: 4,
+        userId: this.userId,
+      });
       if (res.rows.length > 0) {
-        this.hotList = res.rows
+        this.hotList = res.rows;
       }
     },
     async getDays() {
-      const res = await getDaysByCountry(this.keys)
-      this.daysList = res.data
+      const res = await getDaysByCountry(this.keys);
+      this.daysList = res.data;
     },
     gore() {
-      // console.log(111)
       this.diable = false
       this.$parent.fatherMethods();
     },
@@ -156,54 +191,26 @@ export default {
       this.diable = false
       this.$parent.fatherMethod();
     },
-    closeDia() {
-      this.simSelection = 0
-      this.esimSelection = 0
-      this.diables = false
-    },
-    closeShowTip() {
-      this.showTip = false
-    },
-    selectChoose(key,val) {
-      if(key == 'esimSelection') {
-        this.esimSelection = val
-      }else {
-        this.simSelection = val
-      }
-    },
+   
     godowns(item) {
-      this.data = item
-      this.diables = true
-      // lineUserInfo({ userId: this.userId }).then(res => {
-      //   if(res.rows[0].esimSelection == 1 && res.rows[0].simSelection == 1) {
-      //     this.diables = false
-      //     const variantId = this.data.productLink.split('variant=')[1]
-      // 		window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[line]=line&attributes[userId]=${this.userId}&ref=line`
-      //   }else {
-
-      //     this.diables = true
-      //   }
-      // })
+      this.data = item;
+      this.goShopify()
     },
     goShopify() {
-      if(this.simSelection == 0 || this.esimSelection == 0) {
-        this.showTip = true
-        return
-      }
       if (this.data.productLink) {
-        lineUser({ userId: this.userId}).then(res => {
-          const variantId = this.data.productLink.split('variant=')[1]
-          const url = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
+        lineUser({ userId: this.userId }).then((res) => {
+          const variantId = this.data.productLink.split("variant=")[1];
+          const url = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`;
           // alert(url)
-          window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`
-        })
+          window.location.href = `https://jp.shop.desim.tech/cart/${variantId}:1?storefront=true&note=${this.userId}&attributes[simSelection]=${this.simSelection}&attributes[esimSelection]=${this.esimSelection}&ref=line`;
+        });
       }
     },
     handleDaysChange() {
       const item = {
         startDays: this.selectedDays,
         endDays: this.selectedDays,
-        name: `${this.selectedDays}日間`
+        name: `${this.selectedDays}日間`,
       };
       this.godown(item);
     },
@@ -213,41 +220,26 @@ export default {
         startDays: item.startDays,
         endDays: item.endDays,
         type: 1,
-        platformIds: 3
-      }
-      lineProductList(queryParams).then(res => {
+        platformIds: 3,
+      };
+      lineProductList(queryParams).then((res) => {
         if (res.rows && res.rows.length > 0) {
-          // this.$router.push({
-          //   path: './productType',
-          //   query: { 
-          //     'parentProductIds': this.parentProductIds,
-          //     'flagImage': this.flagImage,
-          //     'startDays': item.startDays,
-          //     'endDays': item.endDays,
-          //     // 'userId': this.userId,
-          //     'keyWords': this.key + item.name
-          //   }
-          // })
-          // this.$parent.isShowProductType();
           let obj = {
-            'parentProductIds': this.parentProductIds,
-            'flagImage': this.flagImage,
-            'startDays': item.startDays,
-            'endDays': item.endDays,
-            'keyWords': this.keys + item.name,
-            'userId': this.userId
-          }
-          this.$emit('productTypeSon',obj)
-          // this.$emit('daySon', obj)
+            parentProductIds: this.parentProductIds,
+            flagImage: this.flagImage,
+            startDays: item.startDays,
+            endDays: item.endDays,
+            keyWords: this.keys + item.name,
+            userId: this.userId,
+          };
+          this.$emit("productTypeSon", obj);
         } else {
-          this.diable = true
-          this.keyWords = item.name
+          this.diable = true;
+          this.keyWords = item.name;
         }
-      })
-
+      });
     },
-
-  }
+  },
 };
 </script>
 
@@ -259,26 +251,21 @@ export default {
 
   .hero {
     width: 100%;
-    height: 200px;
-    background-color: #FFD457;
+    height: 161px;
+    background-color: #ffd457;
     border-radius: 0 0 16px 16px;
-    padding: 80px 20px 0 20px;
+    padding: 18.75px 20px 0 20px;
     position: relative;
 
     .desc {
-      color: #000000;
-      font-size: 24px;
-      font-weight: bold;
+      color: #000;
       text-align: center;
+      font-family: "Noto Sans JP";
+      font-size: 25px;
+      font-weight: 700;
+      line-height: normal;
     }
-
-    // .himg {
-    //   position: absolute;
-    //   right: 0;
-    //   bottom: 0;
-    //   width: 133px;
-    //   height: 160px;
-    // }
+    
     .topImg {
       position: absolute;
       top: 20px;
@@ -289,10 +276,10 @@ export default {
 
     .tim {
       position: absolute;
-      bottom: -40px;
+      bottom: -46px;
       right: 20px;
-      width: 50px;
-      height: 73px;
+      width: 58px;
+      height: 77px;
     }
 
     .backClass {
@@ -302,10 +289,6 @@ export default {
       top: 50px;
       left: 20px;
     }
-
-    // ::v-deep .el-icon-arrow-left {
-    //   font-size: 20px;
-    // }
   }
 
   .content {
@@ -313,22 +296,67 @@ export default {
     padding: 20px 20px 0 20px;
 
     .popular {
-      font-size: 16px;
-      color: #000000;
-      font-weight: bold;
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
+      margin-bottom: 30px;
+      .step-wrapper {
+        display: flex;
+        width: 100px;
+        height: 27px;
+        padding: 6px 27px;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        border-radius: 7px;
+        background: #24acf2;
+        color: #fff;
+        text-align: center;
+        font-family: "Noto Sans JP";
+        font-size: 13.75px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+      }
+    }
 
+    .chosen-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 50px;
+      padding: 8px 9px;
+      width: 100%;
+      background: #fff;
       img {
-        width: 60px;
-        height: 25px;
-        margin-right: 10px;
+        position: absolute;
+        width: 50px;
+        height: 34px;
+        object-fit: cover;
+        border: 0.5px solid #e3e3e3;
+        left: 9px;
       }
-
-      span {
-        margin-top: -5px;
+      div {
+        color: #000;
+        font-family: "Noto Sans JP";
+        font-size: 15px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
       }
+    }
+    .unchosen-item {
+      margin: 30px 0;
+      text-align: center;
+      color: #000;
+      text-align: center;
+      font-family: "Noto Sans JP";
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
     }
 
     .card {
@@ -340,16 +368,15 @@ export default {
         background-color: #fff;
         border-radius: 8px;
         margin-bottom: 16px;
-        padding-left: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-image: url('../assets/images/frame13.png');
         background-size: 100% 100%;
         cursor: pointer;
+        border-bottom: 3px solid #FFD457;
 
         .name {
-          color: #6B7280;
+          color: #6b7280;
           font-size: 16px;
           // font-weight: bold;
         }
@@ -357,104 +384,131 @@ export default {
     }
 
     .hotProduct {
+      font-family: "Noto Sans JP";
       color: #000;
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 40px;
-      height: 60px;
-      line-height: 60px;
+      font-weight: 700;
+      margin-top: 30px;
+      padding-top: 30px;
+      padding-bottom: 30px;
       width: 100%;
+      font-size: 16px;
       text-align: center;
-      border-top: 1px solid #C7C7C7;
+      border-top: 1px solid #c7c7c7;
     }
 
     .esimCard {
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      flex-wrap: wrap;
       width: 100%;
-      // margin: 30px auto;
-
+      gap: 15px;
+      padding-bottom: 30px;
       .esimCardItem {
-        flex-basis: 48%;
-        box-sizing: border-box;
-        background-image: url(../assets/images/frame15.png);
-        background-size: 100%, 100%;
-        width: 155px;
-        height: 250px;
-        object-fit: cover;
-        margin-bottom: 20px;
-        position: relative;
+        width: 100%;
         padding: 15px 10px;
-        background-repeat: no-repeat;
-        .cont {
-          position: absolute;
-          width: 90%;
+        display: flex;
+        background: #fff;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 15px;
 
-          .imgdiv {
-            width: 57px;
-            height: 42.84px;
-            border: 1px solid #EFF3F8;
-            border-radius: 10px;
-            margin-bottom: 20px;
-
-            .nationalIcon {
-              width: 55px;
-              height: 42.84px;
-              object-fit: cover;
+        .left-image {
+          width: 140px;
+          height: 140px;
+          img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+          }
+        }
+        .right-text {
+          color: #000;
+          font-family: "Noto Sans JP";
+          display: flex;
+          flex-direction: column;
+          gap: 11px;
+          flex: 1;
+          .product-title {
+            font-size: 12px;
+            line-height: 14px;
+            font-weight: 700;
+          }
+          .product-days {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 15px;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            div {
+              display: flex;
+              align-items: center;
             }
           }
-
-          .card_title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #000;
-            // height: 30px;
-            // line-height: 30px;
-            // margin: 10px 0;
-          }
-
-          .card_desc {
-            font-size: 12px;
-            color: #4E637E;
-            display: flex;
-            align-items: center;
-
-            img {
-              width: 16px;
-              height: 16px;
-              margin-right: 6px;
-
+          .product-price {
+            font-size: 22px;
+            line-height: 26px;
+            font-style: normal;
+            font-weight: 900;
+            line-height: normal;
+            span {
+              font-size: 10px;
+              line-height: 12px;
             }
           }
-
-          .card_sub {
-            font-size: 12px;
-            color: #1A1A1A;
-            height: 30px;
-          }
-
-          .unlimited {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 5px;
+          .product-btn {
             width: 100%;
-
-            .unides {
-              font-size: 16px;
-              font-weight: bold;
-              color: #000;
-              // margin-right: 30px;
-            }
-
-            img {
-              width: 30px;
-              height: 30px;
+            color: #fff;
+            border-radius: 5px;
+            background: #e3222a;
+            border: none;
+            border-bottom: 3.32px solid #900000;
+            display: flex;
+            height: 41.64px;
+            padding: 12px 26px;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            align-self: stretch;
+            &:active {
+              border-bottom: 1px solid #900000;
             }
           }
         }
-
+      }
+    }
+    .unlimited-card {
+      position: relative;
+      border: 1px solid #e3222a;
+      border-radius: 0 0 8px 8px;
+      margin-top: 40px;
+      &::before {
+        text-align: center;
+        color: #fff;
+        line-height: 40px;
+        color: #fff;
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 700;
+        content: "売上第1位!";
+        position: absolute;
+        top: -40px;
+        left: -1px;
+        width: calc(100% + 2px);
+        height: 40px;
+        background: #e3222a;
+        border-radius: 16px 16px 0 0;
+      }
+      &::after {
+        background-image: url("../assets/images/crown.svg");
+        position: absolute;
+        content: "";
+        width: 34.23px;
+        height: 27px;
+        top: -56px;
+        right: 0;
       }
     }
   }
@@ -473,14 +527,14 @@ export default {
 
     .subTit {
       font-size: 20px;
-      color: #1A1A1A;
+      color: #1a1a1a;
       text-align: center;
       font-weight: bold;
     }
 
     .subD {
       font-size: 14px;
-      color: #1A1A1A;
+      color: #1a1a1a;
       // margin-top: 20px;
       text-align: left;
       letter-spacing: 2px;
@@ -497,157 +551,106 @@ export default {
       font-size: 16px;
       font-weight: bold;
       background: #fff;
-      color: #1A1A1A;
+      color: #1a1a1a;
       margin-top: 30px;
-      box-shadow: 0 2px 4px #FFD457;
+      box-shadow: 0 2px 4px #ffd457;
     }
   }
 }
 .bg {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 75, 132, .2);
-}
-
-.confirm_cardss {
-	width: 340px;
-	//height: 220px;
-	background: #FAFCFE;
-	position: fixed;
-	left: 50%;
-	top: 50%;
-	transform: translate(-50%, -66%);
-	border-radius: 12px;
-	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	// align-items: center;
-	.closeImg {
-		position: absolute;
-		top: -5px;
-		right: -5px;
-	}
-	.subTit {
-		font-size: 20px;
-		color: #1A1A1A;
-		text-align: center;
-		font-weight: bold;
-	}
-
-	.subD {
-		font-size: 16px;
-		font-weight: bold;
-		color: #6B7280;
-		display: flex;
-		justify-content: flex-start;
-		align-items: center;
-		height: 60px;
-		.sel {
-			margin-right: 10px;
-			width: 23px;
-			height: 23px;
-		}
-	}
-	.confirmBtn {
-		width: 100%;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		margin-top: 20px;
-		.com {
-			width: 75%;
-      object-fit: cover;
-		}
-	}
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 75, 132, 0.2);
 }
 
 .bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 75, 132, .2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 75, 132, 0.2);
+}
+
+.confirm_cards {
+  width: 340px;
+  //height: 220px;
+  background: #fafcfe;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -66%);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  img {
+    // width: 276px;
+    // height: 20px;
+    margin-top: 10px;
   }
 
-  .confirm_cards {
-    width: 340px;
-    //height: 220px;
-    background: #FAFCFE;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -66%);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    img {
-      // width: 276px;
-      // height: 20px;
-      margin-top: 10px;
-    }
-
-    .subTit {
-      font-size: 20px;
-      color: #1A1A1A;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .subDs {
-      font-size: 14px;
-      color: #1A1A1A;
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .subBtn {
-      cursor: pointer;
-      width: 100%;
-      height: 42px;
-      border-radius: 21px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 16px;
-      font-weight: bold;
-      background: #004B84;
-      color: #FAFCFE;
-      margin-top: 30px;
-    }
+  .subTit {
+    font-size: 20px;
+    color: #1a1a1a;
+    text-align: center;
+    font-weight: bold;
   }
 
-  .select-container {
+  .subDs {
+    font-size: 14px;
+    color: #1a1a1a;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .subBtn {
+    cursor: pointer;
     width: 100%;
+    height: 42px;
+    border-radius: 21px;
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-
-  .days-select {
-    width: 80%;
-    height: 40px;
-    border: none;
-    border-radius: 4px;
-    padding: 0 10px;
     font-size: 16px;
-    color: #6B7280;
-    background-color: transparent;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 1em;
-    cursor: pointer;
-
-    &:focus {
-      outline: none;
-    }
+    font-weight: bold;
+    background: #004b84;
+    color: #fafcfe;
+    margin-top: 30px;
   }
+}
+
+.select-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.days-select {
+  width: 100%;
+  height: 40px;
+  font-family: "Noto Sans JP";
+  border: none;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 16px;
+  color: #6b7280;
+  background-color: transparent;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 22px;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+}
 </style>

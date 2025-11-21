@@ -2,47 +2,81 @@
   <div class="container" v-loading="loading">
     <div v-if="isshow">
       <div class="hero">
-        <img src="../assets/images/frame16.png" class="topImg">
+        <progress-bar :activeStep="1" />
         <img src="../assets/images/frame1.png" class="tim">
         <div class="titleBox">
-          <div class="title">最適なプランを探す</div>
+          <div class="title">どこに行きますか</div>
         </div>
         <div class="autocomplete" >
-            <el-input
-              type="text"
-              v-model="queryParams.parentProductName"
-              @input="onInput"
-              @blur="handleBlur"
-              @focus="handlefocus"
-              placeholder="目的地検索"
-            />
-            <span class="icon" @click="getSearchList"></span>
-            <div v-if="suggestions.length > 0" class="suggestions">
-              <div
-                v-for="suggestion in suggestions"
-                :key="suggestion.id"
-                @click="selectSuggestion(suggestion)"
-                class="suggestion">
-                <div>{{ suggestion.productName }}</div>
-                <div>{{ suggestion.symbol }} {{ suggestion.unitPrice }}</div>
-              </div>
-            </div>
-            <div v-if="suggestions.length == 0 && isSHowEmpty" class="suggestions">
-              <div class="jiaz">ロード中、しばらくお待ちください...</div>
+          <el-input
+            type="text"
+            v-model="queryParams.parentProductName"
+            @input="onInput"
+            @blur="handleBlur"
+            @focus="handlefocus"
+            placeholder="国名を入力"
+          />
+          <span class="icon" @click="getSearchList"></span>
+          <div v-if="suggestions.length > 0" class="suggestions">
+            <div
+              v-for="suggestion in suggestions"
+              :key="suggestion.id"
+              @click="selectSuggestion(suggestion)"
+              class="suggestion">
+              <div>{{ suggestion.productName }}</div>
+              <div>{{ suggestion.symbol }} {{ suggestion.unitPrice }}</div>
             </div>
           </div>
+          <div v-if="suggestions.length == 0 && isSHowEmpty" class="suggestions">
+            <div class="jiaz">ロード中、しばらくお待ちください...</div>
+          </div>
+        </div>
       </div>
       <div class="content" v-if="!diable">
         <div class="popular">
-          <img src="../assets/images/frame9.png">
-          <span>人気の目的地</span>
+          <div class="step-wrapper">STEP1</div>
         </div>
-        <div class="card">
-          <div class="cardItem" v-for="(item, index) in cardList" :key="item.id" @click="godays(item)">
+        <div class="tab-container">
+          <div class="tab-item" :class="{ active: activeTab === 'popular' }" @click="switchTab('popular')">
+            <span>人気国</span>
+          </div>
+          <div class="tab-item" :class="{ active: activeTab === 'area' }" @click="switchTab('area')">
+            <span>エリア別</span>
+          </div>
+        </div>
+        <div class="card" v-if="activeTab === 'popular'">
+          <div class="cardItem" v-for="item in cardList" :key="item.id" @click="godays(item)">
             <img v-if="item.flagImage" :src="item.flagImage" class="pimg">
             <div class="name">{{ item.parentProductName }}</div>
-            <!-- <div class="name">シンガポールシンガポール</div> -->
           </div>
+        </div>
+        <div class="card" v-if="activeTab === 'area'">
+          <!-- 显示区域列表 -->
+          <template v-if="!selectedRegion">
+            <div class="region-card" v-for="region in regionList" :key="region" @click="selectRegion(region)">
+              <div class="region-name">{{ region }}</div>
+              <div class="arrow-down">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="8" viewBox="0 0 15 8" fill="none">
+                  <path d="M0 0L7.36 7.78L14.72 0H0Z" fill="#6B7280"/>
+                </svg>
+              </div>
+            </div>
+          </template>
+          <!-- 显示选中区域的国家列表 -->
+          <template v-else>
+            <div class="region-header">
+              <div class="back-btn" @click="goBackToRegions">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+              </div>
+              <div class="region-title">{{ selectedRegion }}</div>
+            </div>
+            <div class="region-cards">
+              <div class="cardItem" v-for="item in currentRegionCountries" :key="item.id" @click="godays(item)">
+                <img v-if="item.flagImage" :src="item.flagImage" class="pimg">
+                <div class="name">{{ item.parentProductName }}</div>
+              </div>
+            </div>
+          </template>
         </div>
         <div class="history" v-if="historyList.length > 0">購入履歴</div>
         <div class="hisBox" v-if="historyList">
@@ -104,24 +138,6 @@
         <div class="subBtn" @click="goback">戻  る</div>
       </div>
 
-      <div class="bg" v-if="diables">
-        <div class="confirm_cardss">
-          <img src="../assets/images/frame20.png" class="closeImg" @click="closeDia">
-          <div class="subD">
-            <img src="../assets/images/frame21.png" v-if="esimSelection == 0" class="sel" @click="selectChoose('esimSelection',1)">
-            <img src="../assets/images/frame22.png" v-if="esimSelection == 1" class="sel" @click="selectChoose('esimSelection',0)">
-            <span style="letter-spacing: 2px;">eSIM対応端末です</span>
-          </div>
-          <div class="subD">
-            <img src="../assets/images/frame21.png" v-if="simSelection == 0" class="sel" @click="selectChoose('simSelection',1)">
-            <img src="../assets/images/frame22.png" v-if="simSelection == 1" class="sel" @click="selectChoose('simSelection',0)">
-            <span style="letter-spacing: 2px;">SIM ロック解除済み端末です</span>
-          </div>
-          <div class="confirmBtn" @click="goShopify">
-            <img src="../assets/images/frame24.png" class="com">
-          </div>
-        </div>
-      </div>
       <div class="bg" v-if="showTip">
           <div class="confirm_cards">
             <div class="subTit">おっと!</div>
@@ -133,11 +149,9 @@
       </div>
 
     </div>
-
     <!-- 组件 -->
     <days v-if="isDays" :parentProductIds="parentProductIds" :flagImage="flagImage" :keys="keys" :userId="userId"  @productTypeSon="getProductTypeVal"/>
-    <!-- <productType v-if="isProductType" :dayForm="dayForm" @productTypeSon="getProductTypeVal"/> -->
-    <products v-if="isProduct" :productTypeForm="productTypeForm" />
+    <products v-if="isProduct" :productTypeForm="productTypeForm" :flagImage="flagImage" :keys="keys" />
   </div>
 
 </template>
@@ -147,8 +161,9 @@ import { countryManageList, parentlistAnonymous,lineSearchProductList,lineUser,b
 import days from './days.vue';
 import productType from './productType.vue'
 import products from './products.vue'
+import ProgressBar from '@/components/ProgressBar/index.vue'
 export default {
-  components: { days,productType,products },
+  components: { days,productType,products,ProgressBar },
   data() {
     return {
       countryList: [],
@@ -181,15 +196,38 @@ export default {
       suggestions: [],
       historyList: [],
       data: {},
-			simSelection: 0,
-			esimSelection: 0,
+			simSelection: 1,
+			esimSelection: 1,
 			showTip: false,
-      diables: false,
       isSHowEmpty: false,
       hotList: [],
       parentProductName: '',
-      days: ''
+      days: '',
+      activeTab: 'popular', // 'popular' 或 'area'
+      selectedRegion: null // 当前选中的区域
     };
+  },
+  computed: {
+    groupedByRegion() {
+      const grouped = {};
+      console.log(this.cardList, 444)
+      this.cardList.forEach(item => {
+        const region = item.region || 'その他';
+        if (!grouped[region]) {
+          grouped[region] = [];
+        }
+        grouped[region].push(item);
+      });
+      return grouped;
+    },
+    regionList() {
+      // 获取所有区域列表
+      return Object.keys(this.groupedByRegion);
+    },
+    currentRegionCountries() {
+      // 获取当前选中区域的国家列表
+      return this.selectedRegion ? this.groupedByRegion[this.selectedRegion] : [];
+    }
   },
   created() {
     let url = new URL(window.location.href);
@@ -304,6 +342,15 @@ export default {
           }
         ]
         this.cardList = [...arr,...res.data]
+        this.cardList.forEach((item) => {
+          if (item.region === '亚洲') {
+            item.region = 'アジア'
+          } else if (item.region === '美洲') {
+            item.region = '北米'
+          } else if (item.region === '欧洲') {
+            item.region = 'ヨーロッパ'
+          }
+        })
       })
     },
     async getSearchList() {
@@ -367,24 +414,11 @@ export default {
     },
     selectSuggestion(suggestion) {
       this.data = suggestion
-      this.diables = true
-      // this.queryParams.parentProductName = ''
       this.suggestions = [];
+      this.goShopify()
     },
-    closeDia() {
-			this.simSelection = 0
-			this.esimSelection = 0
-			this.diables = false
-		},
 		closeShowTip() {
 			this.showTip = false
-		},
-    selectChoose(key,val) {
-			if(key == 'esimSelection') {
-				this.esimSelection = val
-			}else {
-				this.simSelection = val
-			}
 		},
     godown(item) {
       this.data = item
@@ -392,10 +426,6 @@ export default {
 
 		},
 		goShopify() {
-			if(this.simSelection == 0 || this.esimSelection == 0) {
-				this.showTip = true
-				return
-			}
 			if (this.data.productLink) {
 				lineUser({ userId: this.userId}).then(res => {
           this.queryParams.parentProductName = ''
@@ -409,6 +439,17 @@ export default {
 				})
 			}
 		},
+    switchTab(tab) {
+      this.activeTab = tab
+      // 切换 tab 时重置选中区域
+      this.selectedRegion = null
+    },
+    selectRegion(region) {
+      this.selectedRegion = region
+    },
+    goBackToRegions() {
+      this.selectedRegion = null
+    },
     godays(item) {
       this.queryParams.parentProductName = item.parentProductName
       parentlistAnonymous(this.queryParams).then(res => {
@@ -451,7 +492,6 @@ export default {
       if(this.userId) {
         this.productTypeForm.userId = this.userId
       }
-      // console.log('productType页面传递值为---',obj)
     },
     fatherMethod() {
       this.isDays = true
@@ -495,21 +535,25 @@ export default {
   // padding-bottom: 20px;
   .hero {
     width: 100%;
-    height: 200px;
+    height: 226px;
     background-color: #FFD457;
     border-radius: 0 0 16px 16px;
-    padding-top: 50px;
+    padding-top: 18.75px;
     position: relative;
     .titleBox {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 50px;
+      height: 60px;
 
       .title {
-        color: #000000;
-        font-size: 24px;
-        font-weight: bold;
+        color: #000;
+        text-align: center;
+        font-family: "Noto Sans JP";
+        font-size: 25px;
+        font-weight: 700;
+        line-height: normal;
+        padding: 14px 0;
       }
     }
     .topImg {
@@ -521,10 +565,10 @@ export default {
     }
     .tim {
       position: absolute;
-      bottom: -40px;
+      bottom: -42px;
       right: 20px;
-      width: 50px;
-      height: 73px;
+      width: 58px;
+      height: 77px;
     }
     .autocomplete {
       position: relative;
@@ -543,7 +587,7 @@ export default {
       border: 1px solid #d4d4d4;
       border-top: none;
       z-index: 99;
-      top: 90%;
+      top: 100%;
       left: 0;
       right: 0;
       background-color: white;
@@ -594,8 +638,7 @@ export default {
       box-shadow: 0 2px 4px #FBEB63;
     }
     ::v-deep .el-input--medium .el-input__inner {
-      height: 44px;
-      line-height: 44px;
+      height: 55px;
       padding-right: 30px;
       width: 100%;
       border-radius: 10px;
@@ -631,19 +674,65 @@ export default {
     padding: 20px 20px 0 20px;
 
     .popular {
-      font-size: 16px;
-      color: #000000;
-      font-weight: bold;
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
-      img {
-        width: 60px;
-        height: 25px;
-        margin-right: 10px;
+      .step-wrapper {
+        display: flex;
+        width: 100px;
+        height: 27px;
+        padding: 6px 27px;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        border-radius: 7px;
+        background: #24ACF2;
+        color: #FFF;
+        text-align: center;
+        font-family: "Noto Sans JP";
+        font-size: 13.75px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
       }
-      span {
-        margin-top: -5px;
+    }
+
+    .tab-container {
+      display: flex;
+      margin-top: 30px;
+      .tab-item {
+        flex: 1;
+        text-align: center;
+        padding: 12px 0;
+        color: #C7C7C7;
+        font-family: "Noto Sans JP";
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.3s ease;
+        span {
+          display: inline-block;
+          position: relative;
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #FF6B35;
+            transition: width 0.3s ease;
+          }
+        }
+        &.active {
+          color: #FF7536;
+          font-weight: 700;
+          span::after {
+            width: 100%;
+          }
+        }
       }
     }
 
@@ -652,31 +741,114 @@ export default {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      .cardItem {
-        width: 48%;
-        height: 60px;
+      gap: 10px;
+      .region-cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+      }
+      .region-card {
+        width: calc(50% - 5px);
+        height: 70px;
         border-radius: 8px;
-        margin-bottom: 16px;
-        padding-left: 10px;
+        display: flex;
+        padding: 0 7px;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        background-color: #fff;
+        border-bottom: 3px solid #FFD457;
+        transition: all 0.2s ease;
+        &:active {
+          border-bottom: 1px solid #FFD457;
+          transform: translateY(2px);
+        }
+        .region-name {
+          color: #6B7280;
+          font-family: "Noto Sans JP";
+          font-size: 14px;
+          font-weight: 500;
+          line-height: normal;
+          flex: 1;
+        }
+        .arrow-down {
+          color: #6B7280;
+          font-size: 12px;
+          transition: transform 0.2s ease;
+        }
+        &:hover .arrow-down {
+          transform: translateY(2px);
+        }
+      }
+      .region-header {
+        width: 100%;
         display: flex;
         align-items: center;
-        background-image: url('../assets/images/frame13.png');
-        background-size: 100% 100%;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #E5E7EB;
+        .back-btn {
+          width: 14px;
+          height: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          margin-right: 10px;
+          transition: color 0.2s ease;
+        }
+        .region-title {
+          font-family: "Noto Sans JP";
+          font-size: 18px;
+          font-weight: 700;
+        }
+      }
+      .region-group {
+        width: 100%;
+        margin-bottom: 20px;
+        .region-title {
+          width: 100%;
+          color: #000;
+          font-family: "Noto Sans JP";
+          font-size: 16px;
+          font-weight: 700;
+          margin-bottom: 10px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #E5E7EB;
+        }
+       
+      }
+      .cardItem {
+        width: calc(50% - 5px);
+        height: 70px;
+        border-radius: 8px;
+        display: flex;
+        padding: 0 7px;
+        align-items: center;
         cursor: pointer;
+        background-color: #fff;
+        border-bottom: 3px solid #FFD457;
+        &:active {
+          border-bottom: 1px solid #FFD457;
+        }
 
         .pimg {
-          width: 38.11px;
-          height: 30px;
-          margin-right: 10px;
-          // border-radius: 10px;
+          width: 50px;
+          height: 33.33px;
+          margin-right: 7px;
+          border: 0.5px solid #E3E3E3;
           object-fit: cover;
         }
 
         .name {
           color: #6B7280;
+          font-family: "Noto Sans JP";
           font-size: 14px;
-          font-weight: bold;
-          margin-top: -5px;
+          font-weight: 500;
+          line-height: normal;
+          flex: 1;
         }
       }
     }

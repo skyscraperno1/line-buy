@@ -1,0 +1,327 @@
+{{ '//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css' | stylesheet_tag }}
+{{ 'section-delivery-date.css' | asset_url | stylesheet_tag }}
+{{ '//code.jquery.com/jquery-3.6.0.min.js' | script_tag }}
+{{ '//code.jquery.com/ui/1.13.2/jquery-ui.min.js' | script_tag }}
+<div class="delivery-date-container">
+  <!-- Row One：Active Date and Use Current Date Button -->
+  <div class="custom-form-row">
+    <div class="required">*</div>
+    <div class="left-area">
+      <div class="field">
+        <input
+          type="text"
+          id="departureDate"
+          name="attributes[departureDate]"
+          class="field__input date-picker"
+          placeholder="{{ 'sections.cart.active_date' | t }}"
+          aria-label="{{ 'sections.cart.active_date' | t }}"
+          value="{{ cart.attributes.departureDate }}"
+        >
+        <label class="field__label" for="departureDate">{{ 'sections.cart.active_date' | t }}</label>
+      </div>
+    </div>
+    <div class="right-area">
+      <button
+        type="button"
+        id="useCurrentDate"
+        class="cart__checkout-button button"
+        aria-label="{{ 'sections.cart.Get_started' | t }}"
+      >
+        <span class="button-text">{{ 'sections.cart.Get_started' | t }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Row Two Arrival Date -->
+  <div class="custom-form-row">
+    <div class="required">*</div>
+    <div class="left-area">
+      <div class="field">
+        <input
+          type="text"
+          id="travelDate"
+          name="attributes[travelDate]"
+          class="field__input date-picker"
+          placeholder="{{ 'sections.cart.arrival_date' | t }}"
+          aria-label="{{ 'sections.cart.arrival_date' | t }}"
+          value="{{ cart.attributes.departureDate }}"
+        >
+        <label class="field__label" for="travelDate">{{ 'sections.cart.arrival_date' | t }}</label>
+      </div>
+    </div>
+    <div class="right-area">
+      <button
+        type="button"
+        id="useCurrentTravel"
+        class="cart__checkout-button button"
+        aria-label="{{ 'sections.cart.Get_started' | t }}"
+      >
+        <span class="button-text">{{ 'sections.cart.Get_started' | t }}</span>
+      </button>
+    </div>
+  </div>
+  <div class="custom-form-row attention-row">
+    <div class="required checkbox-required">*</div>
+    <div class="attention-checkbox">
+      <input type="checkbox" id="attention_1" name="attention_1" value="yes">
+      <label for="attention_1">{{ 'sections.cart.attention_1' | t }}</label>
+    </div>
+  </div>
+  <div class="custom-form-row attention-row">
+    <div class="required checkbox-required">*</div>
+    <div class="attention-checkbox">
+      <input type="checkbox" id="attention_2" name="attention_2" value="yes">
+      <label for="attention_2">{{ 'sections.cart.attention_2' | t }}</label>
+    </div>
+  </div>
+  <div class="custom-form-row attention-row">
+    <div class="required checkbox-required">*</div>
+    <div class="attention-checkbox">
+      <input type="checkbox" id="attention_3" name="attention_3" value="yes">
+      <label for="attention_3">{{ 'sections.cart.attention_3' | t }}</label>
+    </div>
+  </div>
+  <div class="custom-form-row border-t margin-b-none">
+    <div>
+      <p>
+        <strong>{{ 'sections.cart.agreement_title' | t }}</strong>
+      </p>
+      <p>{{ 'sections.cart.agreement_content' | t }}</p>
+      <p>{{ 'sections.cart.agreement_content_2' | t }}</p>
+    </div>
+  </div>
+  <div class="custom-form-row">
+    <div class="required checkbox-required">*</div>
+    <div class="right-area">
+      <input type="checkbox" id="agreement" name="agreement" value="yes">
+      <label for="agreement">{{ 'sections.cart.agreement_checkbox' | t }}</label>
+    </div>
+  </div>
+</div>
+
+<script>
+  function debounce(func, wait) {
+    let timeout;
+    return function() {
+      const context = this;
+      const args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        func.apply(context, args);
+      }, wait);
+    };
+  }
+  function setDisabled(value) {
+    $('[name="add"]').prop('disabled', value);
+    $('[name="checkout"]').prop('disabled', value);
+  }
+
+  function showInputError($input, message) {
+    clearInputError($input)
+    $input.addClass('field__input--error');
+    const errorText = document.createElement('div')
+    errorText.className = 'field__input-error-text'
+    errorText.textContent = message
+    $input.after(errorText)
+  }
+
+  function clearInputError($input) {
+    if (!$input) {
+      return
+    }
+    $input.removeClass('field__input--error');
+    $input.next('.field__input-error-text').remove();
+  }
+
+  function checkAttention() {
+    const attention1 = $('#attention_1').is(':checked');
+    const attention2 = $('#attention_2').is(':checked');
+    const attention3 = $('#attention_3').is(':checked');
+    return attention1 && attention2 && attention3;
+  }
+
+  function validateAll() {
+    const departureDate = $('#departureDate').val();
+    const travelDate = $('#travelDate').val();
+    const hasDateErrors = $('#departureDate').hasClass('field__input--error') || $('#travelDate').hasClass('field__input--error');
+    const attentionValid = checkAttention();
+    const agreementChecked = $('#agreement').is(':checked');
+
+    if (departureDate !== '' && travelDate !== '' && !hasDateErrors && attentionValid && agreementChecked) {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }
+
+  function check_active() {
+      const inputElement = $('#departureDate')
+      const departureDate = inputElement.val()
+      const travelDate = $('#travelDate').val()
+      const timeDiff = Math.abs(new Date(travelDate).getTime() - new Date(departureDate).getTime())
+      const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      if (departureDate === '') {
+        showInputError(inputElement, '{{ 'sections.cart.Please_select_the_desired_date' | t }}')
+      } else if (travelDate !== '' && departureDate > travelDate) {
+        showInputError(inputElement, '{{ 'sections.cart.Please_check_your_desired_date_and_planned_travel_date' | t }}')
+      } else if (dayDiff > 30) {
+        showInputError(inputElement, '{{ 'sections.cart.hint1' | t }}')
+      } else {
+        if (travelDate !== '' && $('#travelDate').hasClass('field__input--error') && $('#travelDate').next('.field__input-error-text').text() === '{{ 'sections.cart.Please_select_your_planned_travel_date' | t }}') {
+          clearInputError($('#travelDate'))
+        }
+        clearInputError(inputElement)
+      }
+      validateAll();
+    }
+
+  function initActiveDatePicker() {
+    const inputElement = $('#departureDate')
+    inputElement.val('');
+    inputElement.datepicker({
+      minDate: 0, // only after today
+      dateFormat: 'yy-mm-dd',
+    });
+
+    const debounce_check_active = debounce(check_active, 600)
+    // Validate and restore on blur
+    inputElement.on('blur', function () {
+      validateAndRestoreDate($(this));
+      check_active()
+    });
+    inputElement.on('change', function () {
+      debounce_check_active()
+    })
+  }
+
+  function initArrivalDatePicker() {
+    const inputElement = $('#travelDate')
+    inputElement.val('');
+    inputElement.datepicker({
+      minDate: 0, // only after today
+      dateFormat: 'yy-mm-dd',
+    });
+    function check_arrival() {
+      const travelDate = inputElement.val()
+      const departureDate = $('#departureDate').val()
+      const timeDiff = Math.abs(new Date(travelDate).getTime() - new Date(departureDate).getTime())
+      const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      if (travelDate === '') {
+        showInputError(inputElement, '{{ 'sections.cart.Please_select_your_planned_travel_date' | t }}')
+      } else if (departureDate !== '' && travelDate < departureDate) {
+        showInputError(inputElement, '{{ 'sections.cart.Please_check_your_desired_date_and_planned_travel_date' | t }}')
+      } else if (dayDiff > 30) {
+        showInputError(inputElement, '{{ 'sections.cart.hint1' | t }}')
+      } else {
+        if (departureDate !== '' && $('#departureDate').hasClass('field__input--error') && $('#departureDate').next('.field__input-error-text').text() === '{{ 'sections.cart.Please_select_the_desired_date' | t }}') {
+          clearInputError($('#departureDate'))
+        }
+        clearInputError(inputElement)
+      }
+      validateAll();
+    }
+    const debounce_check_arrival = debounce(check_arrival, 600)
+    // Validate and restore on blur
+    $('#travelDate').on('blur', function () {
+      validateAndRestoreDate($(this));
+      check_arrival()
+    });
+    inputElement.on('change', function () {
+      debounce_check_arrival()
+    })
+  }
+
+  function check_agreement() {
+    validateAll();
+  }
+  function initAgreement() {
+    $('#agreement').on('change', function () {
+      check_agreement()
+    })
+  }
+
+  function initAttention() {
+    $('#attention_1, #attention_2, #attention_3').on('change', function () {
+      validateAll();
+    });
+  }
+
+  function validateAndRestoreDate($input) {
+    const inputValue = $input.val().trim();
+    const originalValue = $input.data('original-value') || '';
+
+    // If input is empty, keep it empty
+    if (!inputValue) {
+      $input.data('original-value', '');
+      return;
+    }
+
+    // Check if it's a valid date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(inputValue)) {
+      $input.val(originalValue);
+      return;
+    }
+
+    // Check if it's a valid date
+    const inputDate = new Date(inputValue);
+    if (isNaN(inputDate.getTime())) {
+      $input.val(originalValue);
+      return;
+    }
+
+    // Check if date is today or in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    inputDate.setHours(0, 0, 0, 0);
+
+    if (inputDate < today) {
+      $input.val(originalValue);
+      return;
+    }
+
+    // If all validations pass, update the original value
+    $input.data('original-value', inputValue);
+  }
+
+  function initUseCurrentDateButton() {
+    $('#useCurrentDate').on('click', function () {
+      const today = new Date();
+      const formattedDate =
+        today.getFullYear() +
+        '-' +
+        String(today.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(today.getDate()).padStart(2, '0');
+
+      $('#departureDate').val(formattedDate);
+      check_active()
+    });
+  }
+
+  function initUseCurrentTravelDateButton() {
+   $('#useCurrentTravel').on('click', function () {
+      const today = new Date();
+      const formattedDate =
+        today.getFullYear() +
+        '-' +
+        String(today.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(today.getDate()).padStart(2, '0');
+
+      $('#travelDate').val(formattedDate);
+      check_active()
+    });
+  }
+
+  $(document).ready(function () {
+    initActiveDatePicker();
+    initArrivalDatePicker();
+    initUseCurrentDateButton();
+    initUseCurrentTravelDateButton();
+    initAgreement();
+    initAttention();
+    setDisabled(true);
+    validateAll();
+  });
+</script>
