@@ -492,7 +492,7 @@ export default {
         font-family: Inter;
         font-size: 14px;
         font-weight: 700;
-        content: "売上第1位!";
+        content: "データ無制限だから好きなだけ使える！";
         position: absolute;
         top: -40px;
         left: -1px;

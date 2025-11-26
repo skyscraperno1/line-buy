@@ -183,7 +183,7 @@ export default {
         productType: this.form.productType,
         type: 1,
         platformIds: 3,
-        orderByColumn: "days,`usage`",
+        orderByColumn: "productType, days,`usage`",
         isAsc: "asc",
       };
       const res = await lineProductList(queryParams);
@@ -481,7 +481,7 @@ export default {
         font-family: Inter;
         font-size: 14px;
         font-weight: 700;
-        content: "売上第1位";
+        content: "データ無制限だから好きなだけ使える！";
         position: absolute;
         top: -40px;
         left: -1px;
@@ -668,7 +668,7 @@ export default {
       font-family: Inter;
       font-size: 14px;
       font-weight: 700;
-      content: "売上第1位";
+      content: "データ無制限だから好きなだけ使える！";
       position: absolute;
       top: -40px;
       left: -1px;
