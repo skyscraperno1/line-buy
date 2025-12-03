@@ -7,6 +7,10 @@
     src: url('./verdana.ttf');
 }
 @font-face {
+    font-family: 'Noto Sans JP';
+    src: url('./Noto_Sans_JP.ttf');
+}
+@font-face {
     font-family: 'kozuka';
     src: url('./Kozuka-Gothic-Pr6N-Regular-2.otf');
 }
